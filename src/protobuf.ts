@@ -289,25 +289,25 @@ ProtoBuf.Util = (function () {
      * @throws {Error} If XMLHttpRequest is not supported
      * @expose
      */
-    Util.XHR = function () {
-        // No dependencies please, ref: http://www.quirksmode.org/js/xmlhttp.html
-        var XMLHttpFactories = [
-            function () { return new XMLHttpRequest() },
-            function () { return new ActiveXObject("Msxml2.XMLHTTP") },
-            function () { return new ActiveXObject("Msxml3.XMLHTTP") },
-            function () { return new ActiveXObject("Microsoft.XMLHTTP") }
-        ];
-        /** @type {?XMLHttpRequest} */
-        var xhr = null;
-        for (var i = 0; i < XMLHttpFactories.length; i++) {
-            try { xhr = XMLHttpFactories[i](); }
-            catch (e) { continue; }
-            break;
-        }
-        if (!xhr)
-            throw Error("XMLHttpRequest is not supported");
-        return xhr;
-    };
+    // Util.XHR = function () {
+    //     // No dependencies please, ref: http://www.quirksmode.org/js/xmlhttp.html
+    //     var XMLHttpFactories = [
+    //         function () { return new XMLHttpRequest() },
+    //         function () { return new ActiveXObject("Msxml2.XMLHTTP") },
+    //         function () { return new ActiveXObject("Msxml3.XMLHTTP") },
+    //         function () { return new ActiveXObject("Microsoft.XMLHTTP") }
+    //     ];
+    //     /** @type {?XMLHttpRequest} */
+    //     var xhr = null;
+    //     for (var i = 0; i < XMLHttpFactories.length; i++) {
+    //         try { xhr = XMLHttpFactories[i](); }
+    //         catch (e) { continue; }
+    //         break;
+    //     }
+    //     if (!xhr)
+    //         throw Error("XMLHttpRequest is not supported");
+    //     return xhr;
+    // };
 
     /**
      * Fetches a resource.
@@ -320,45 +320,53 @@ ProtoBuf.Util = (function () {
     Util.fetch = function (path, callback) {
         if (callback && typeof callback != 'function')
             callback = null;
-        if (Util.IS_NODE) {
-            // var fs = require("fs");
-            // if (callback) {
-            //     fs.readFile(path, function (err, data) {
-            //         if (err)
-            //             callback(null);
-            //         else
-            //             callback("" + data);
-            //     });
-            // } else
-            //     try {
-            //         return fs.readFileSync(path);
-            //     } catch (e) {
-            //         return null;
-            //     }
-        } else {
-            var xhr = Util.XHR();
-            xhr.open('GET', path, callback ? true : false);
-            // xhr.setRequestHeader('User-Agent', 'XMLHTTP/1.0');
-            xhr.setRequestHeader('Accept', 'text/plain');
-            if (typeof xhr.overrideMimeType === 'function') xhr.overrideMimeType('text/plain');
-            if (callback) {
-                xhr.onreadystatechange = function () {
-                    if (xhr.readyState != 4) return;
-                    if (/* remote */ xhr.status == 200 || /* local */ (xhr.status == 0 && typeof xhr.responseText === 'string'))
-                        callback(xhr.responseText);
-                    else
-                        callback(null);
-                };
-                if (xhr.readyState == 4)
-                    return;
-                xhr.send(null);
-            } else {
-                xhr.send(null);
-                if (/* remote */ xhr.status == 200 || /* local */ (xhr.status == 0 && typeof xhr.responseText === 'string'))
-                    return xhr.responseText;
-                return null;
-            }
+
+        let content = "";
+        let simplePath = path.replace("./", "");
+        content = this.protoFileCache[simplePath]
+        if (content) {
+            return content;
         }
+        return null;
+        // if (Util.IS_NODE) {
+        //     // var fs = require("fs");
+        //     // if (callback) {
+        //     //     fs.readFile(path, function (err, data) {
+        //     //         if (err)
+        //     //             callback(null);
+        //     //         else
+        //     //             callback("" + data);
+        //     //     });
+        //     // } else
+        //     //     try {
+        //     //         return fs.readFileSync(path);
+        //     //     } catch (e) {
+        //     //         return null;
+        //     //     }
+        // } else {
+        //     var xhr = Util.XHR();
+        //     xhr.open('GET', path, callback ? true : false);
+        //     // xhr.setRequestHeader('User-Agent', 'XMLHTTP/1.0');
+        //     xhr.setRequestHeader('Accept', 'text/plain');
+        //     if (typeof xhr.overrideMimeType === 'function') xhr.overrideMimeType('text/plain');
+        //     if (callback) {
+        //         xhr.onreadystatechange = function () {
+        //             if (xhr.readyState != 4) return;
+        //             if (/* remote */ xhr.status == 200 || /* local */ (xhr.status == 0 && typeof xhr.responseText === 'string'))
+        //                 callback(xhr.responseText);
+        //             else
+        //                 callback(null);
+        //         };
+        //         if (xhr.readyState == 4)
+        //             return;
+        //         xhr.send(null);
+        //     } else {
+        //         xhr.send(null);
+        //         if (/* remote */ xhr.status == 200 || /* local */ (xhr.status == 0 && typeof xhr.responseText === 'string'))
+        //             return xhr.responseText;
+        //         return null;
+        //     }
+        // }
     };
 
     /**
@@ -5239,3 +5247,12 @@ ProtoBuf.loadJsonFile = function (filename, callback, builder) {
     var contents = ProtoBuf.Util.fetch(typeof filename === 'object' ? filename["root"] + "/" + filename["file"] : filename);
     return contents === null ? null : ProtoBuf.loadJson(JSON.parse(contents), builder, filename);
 };
+
+//proto文件缓存
+ProtoBuf.Util.protoFileCache = {}
+
+ProtoBuf.cacheProtos = function (files: { name: string, text: string }[]) {
+    for (let file of files) {
+        ProtoBuf.Util.protoFileCache[file.name] = file.text;
+    }
+}
