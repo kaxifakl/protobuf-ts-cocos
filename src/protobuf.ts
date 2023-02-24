@@ -6,7 +6,7 @@ import ByteBuffer from "./bytebuffer";
  * @namespace
  * @expose
  */
-var ProtoBuf: any = {};
+export var ProtoBuf: any = {};
 
 /**
  * @type {!function(new: ByteBuffer, ...[*])}
