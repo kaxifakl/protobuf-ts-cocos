@@ -2117,23 +2117,28 @@ ProtoBuf.Reflect = (function (ProtoBuf) {
 
             // 64bit signed varint
             case ProtoBuf.TYPES["int64"]:
-                return buffer.readVarint64();
+                //return buffer.readVarint64();
+                return buffer.readVarint64().toNumber();
 
             // 64bit unsigned varint
             case ProtoBuf.TYPES["uint64"]:
-                return buffer.readVarint64().toUnsigned();
+                //return buffer.readVarint64().toUnsigned();
+                return buffer.readVarint64().toUnsigned().toNumber();
 
             // 64bit signed varint zig-zag
             case ProtoBuf.TYPES["sint64"]:
-                return buffer.readVarint64ZigZag();
+                //return buffer.readVarint64ZigZag();
+                return buffer.readVarint64ZigZag().toNumber();
 
             // Fixed 64bit unsigned
             case ProtoBuf.TYPES["fixed64"]:
-                return buffer.readUint64();
+                //return buffer.readUint64();
+                return buffer.readUint64().toNumber();
 
             // Fixed 64bit signed
             case ProtoBuf.TYPES["sfixed64"]:
-                return buffer.readInt64();
+                //return buffer.readInt64();
+                return buffer.readInt64().toNumber();
 
             // Bool varint
             case ProtoBuf.TYPES["bool"]:
